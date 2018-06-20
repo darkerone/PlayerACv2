@@ -30,7 +30,8 @@ namespace PlayerACv2.ViewModels
         public MainViewModel()
         {
             _player = new PlayerViewModel();
-            _player.setMusique(@"C:\Users\ChaupinAn\Downloads\Imagine Dragons - Thunder.mp3");
+            string currentDirectory = Directory.GetCurrentDirectory();
+            _player.setMusique(currentDirectory + "\\Imagine Dragons - Thunder.mp3");
         }
 
         #region Commands
