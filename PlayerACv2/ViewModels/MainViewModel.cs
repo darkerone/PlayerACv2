@@ -14,11 +14,23 @@ namespace PlayerACv2.ViewModels
     {
         #region Properties
 
+        private PlayerViewModel _player;
+        public PlayerViewModel Player
+        {
+            get { return _player; }
+            set
+            {
+                _player = value;
+                OnPropertyChanged();
+            }
+        }
 
         #endregion
 
         public MainViewModel()
         {
+            _player = new PlayerViewModel();
+            _player.setMusique(@"C:\Users\ChaupinAn\Downloads\Imagine Dragons - Thunder.mp3");
         }
 
         #region Commands

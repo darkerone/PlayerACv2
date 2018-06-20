@@ -6,7 +6,10 @@
         xmlns:local="clr-namespace:PlayerACv2"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+    <StackPanel>
+        <Button Content="PlayPause" Command="{Binding Player.PlayPause}"></Button>
+        <Button Content="Jump backward" Command="{Binding Player.JumpBackward}"></Button>
+        <Button Content="Jump forward" Command="{Binding Player.JumpForward}"></Button>
+        <TextBox Text="{Binding Player.PositionInSec}"></TextBox>
+    </StackPanel>
 </Window>
