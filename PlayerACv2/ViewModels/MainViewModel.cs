@@ -25,13 +25,25 @@ namespace PlayerACv2.ViewModels
             }
         }
 
+        private string _musicPathName;
+        public string MusicPathName
+        {
+            get { return _musicPathName; }
+            set
+            {
+                _musicPathName = value;
+                OnPropertyChanged();
+            }
+        }
+
         #endregion
 
         public MainViewModel()
         {
-            _player = new PlayerViewModel();
+            //_player = new PlayerViewModel();
             string currentDirectory = Directory.GetCurrentDirectory();
-            _player.setMusique(currentDirectory + "\\Imagine Dragons - Thunder.mp3");
+            //_player.SetMusique(currentDirectory + "\\Imagine Dragons - Thunder.mp3");
+            MusicPathName = currentDirectory + "\\Imagine Dragons - Thunder.mp3";
         }
 
         #region Commands

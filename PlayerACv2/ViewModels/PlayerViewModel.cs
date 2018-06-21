@@ -52,13 +52,24 @@ namespace PlayerACv2.ViewModels
             }
         }
 
-        private string _positionInSec = "0";
-        public string PositionInSec
+        private double _positionInSec = 0;
+        public double PositionInSec
         {
             get { return _positionInSec; }
             set
             {
                 _positionInSec = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _maxPositionInSec = 100;
+        public double MaxPositionInSec
+        {
+            get { return _maxPositionInSec; }
+            set
+            {
+                _maxPositionInSec = value;
                 OnPropertyChanged();
             }
         }
@@ -141,34 +152,56 @@ namespace PlayerACv2.ViewModels
 
         #region Publics methods
 
-        public void setMusique(string musicPathName)
+        /// <summary>
+        /// Initialise une musique dans le lecteur
+        /// </summary>
+        /// <param name="musicPathName">Chemin de la musique</param>
+        public void SetMusique(string musicPathName)
         {
             _mediaPlayer.Close();
             if (musicPathName != null && musicPathName != "")
             {
                 _mediaPlayer.Open(new Uri(musicPathName));
+
+                _mediaPlayer.MediaOpened -= _mediaPlayer_MediaOpened;
+                _mediaPlayer.MediaOpened += _mediaPlayer_MediaOpened;
             }
             IsPLaying = false;
         }
-
+        
         #endregion
 
         #endregion region
 
         #region Privates methods
 
-        private string GetStringOfTime(int hours, int minutes, int seconds)
-        {
-            return hours.ToString("D2") + ":" + minutes.ToString("D2") + ":" + seconds.ToString("D2");
-        }
-
         #endregion region
 
         #region Events
 
+        /// <summary>
+        /// A chaque tick du timer
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void _timer_Tick(object sender, EventArgs e)
         {
-            PositionInSec = GetStringOfTime(_mediaPlayer.Position.Hours, _mediaPlayer.Position.Minutes, _mediaPlayer.Position.Seconds);
+            // Mise à jour de la position courante de la musique
+            PositionInSec = _mediaPlayer.Position.TotalSeconds;
+        }
+
+        /// <summary>
+        /// Une fois que le média est ouvert
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void _mediaPlayer_MediaOpened(object sender, EventArgs e)
+        {
+            // Cette propriété TimeSpan ne peut avoir une valeur qu'une fois le média ouvert
+            if (_mediaPlayer.NaturalDuration.HasTimeSpan)
+            {
+                MaxPositionInSec = _mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+            }
         }
 
         #endregion
