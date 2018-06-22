@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PlayerACv2.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ namespace PlayerACv2
         private System.Windows.Forms.Timer _timer;
         private Image _playImageResource;
         private Image _pauseImageResource;
+        private PositionUpdateSourceEnum _lastPositionUpdateSource = PositionUpdateSourceEnum.Slider;
 
         #region Dependency Properties
 
@@ -207,6 +209,7 @@ namespace PlayerACv2
         /// </summary>
         public void JumpBackward()
         {
+            _lastPositionUpdateSource = PositionUpdateSourceEnum.Jump;
             this.JumpToPosition(_mediaPlayer.Position.TotalSeconds - JumpBackwardOffset);
         }
 
@@ -215,6 +218,7 @@ namespace PlayerACv2
         /// </summary>
         public void JumpForward()
         {
+            _lastPositionUpdateSource = PositionUpdateSourceEnum.Jump;
             this.JumpToPosition(_mediaPlayer.Position.TotalSeconds + JumpForwardOffset);
         }
 
@@ -305,6 +309,7 @@ namespace PlayerACv2
         private void Slider_Position_DragStarted(object sender, RoutedEventArgs e)
         {
             IsUserDraggingSlider = true;
+            _lastPositionUpdateSource = PositionUpdateSourceEnum.ThumbDrag;
         }
 
         /// <summary>
@@ -324,11 +329,13 @@ namespace PlayerACv2
         /// <param name="e"></param>
         private void Slider_Position_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (IsUserDraggingSlider)
+            if (_lastPositionUpdateSource == PositionUpdateSourceEnum.Slider || 
+                _lastPositionUpdateSource == PositionUpdateSourceEnum.ThumbDrag)
             {
                 this.Text_Position.Text = this.GetTimeStringFromSeconds(Convert.ToInt32(this.Slider_Position.Value));
                 this.JumpToPosition(this.Slider_Position.Value);
             }
+            _lastPositionUpdateSource = PositionUpdateSourceEnum.Slider;
         }
 
         #endregion

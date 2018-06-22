@@ -68,6 +68,7 @@
     <Compile Include="PlayerAC.xaml.cs">
       <DependentUpon>PlayerAC.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PositionUpdateSourceEnum.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
