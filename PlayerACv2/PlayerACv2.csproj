@@ -65,12 +65,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DelegateCommand.cs" />
-    <Compile Include="DoubleToTimeStringConverter.cs" />
     <Compile Include="PlayerAC.xaml.cs">
       <DependentUpon>PlayerAC.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\BaseViewModel.cs" />
-    <Compile Include="ViewModels\PlayerViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -109,13 +107,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Icons\ForwindLong.png" />
+    <Resource Include="Icons\RecordingPause.png" />
+    <Resource Include="Icons\RecordingPlay.png" />
+    <Resource Include="Icons\RewindLong.png" />
     <Content Include="Imagine Dragons - Thunder.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Icons\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

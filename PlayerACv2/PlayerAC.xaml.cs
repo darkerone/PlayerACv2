@@ -22,22 +22,81 @@ namespace PlayerACv2
     {
         private MediaPlayer _mediaPlayer;
         private System.Windows.Forms.Timer _timer;
-        private TextBlock _positionInSecTextControl;
-        private TextBlock _maxPositionInSecTextControl;
-        private Button _playPauseButtonControl;
-        private Button _jumpBackwardButtonControl;
-        private Button _jumpForwardButtonControl;
-        private Slider _positionSliderControl;
+        private Image _playImageResource;
+        private Image _pauseImageResource;
 
         #region Dependency Properties
 
         public static readonly DependencyProperty MusicPathNameProperty =
-            DependencyProperty.Register("MusicPathName", typeof(string), typeof(PlayerAC), new FrameworkPropertyMetadata(OnMusicPathPropertyChanged));
-
+            DependencyProperty.Register("MusicPathName", typeof(string), typeof(PlayerAC), new FrameworkPropertyMetadata(OnMusicPathNamePropertyChanged));
         public string MusicPathName
         {
             get { return (string)GetValue(MusicPathNameProperty); }
             set { SetValue(MusicPathNameProperty, value); }
+        }
+
+        public static readonly DependencyProperty PlayPauseButtonVisibilityProperty =
+            DependencyProperty.Register("PlayPauseButtonVisibility", typeof(Visibility), typeof(PlayerAC), new FrameworkPropertyMetadata(OnPlayPauseButtonVisibilityPropertyChanged));
+        public Visibility PlayPauseButtonVisibility
+        {
+            get { return (Visibility)GetValue(PlayPauseButtonVisibilityProperty); }
+            set { SetValue(PlayPauseButtonVisibilityProperty, value); }
+        }
+
+        public static readonly DependencyProperty JumpButtonsVisibilityProperty =
+            DependencyProperty.Register("JumpButtonsVisibility", typeof(Visibility), typeof(PlayerAC), new FrameworkPropertyMetadata(OnJumpButtonsVisibilityPropertyChanged));
+        public Visibility JumpButtonsVisibility
+        {
+            get { return (Visibility)GetValue(JumpButtonsVisibilityProperty); }
+            set { SetValue(JumpButtonsVisibilityProperty, value); }
+        }
+
+        public static readonly DependencyProperty PositionSliderVisibilityProperty =
+            DependencyProperty.Register("PositionSliderVisibility", typeof(Visibility), typeof(PlayerAC), new FrameworkPropertyMetadata(OnPositionSliderVisibilityPropertyChanged));
+        public Visibility PositionSliderVisibility
+        {
+            get { return (Visibility)GetValue(PositionSliderVisibilityProperty); }
+            set { SetValue(PositionSliderVisibilityProperty, value); }
+        }
+
+        public static readonly DependencyProperty PositionTextVisibilityProperty =
+            DependencyProperty.Register("PositionTextVisibility", typeof(Visibility), typeof(PlayerAC), new FrameworkPropertyMetadata(OnPositionTextVisibilityPropertyChanged));
+        public Visibility PositionTextVisibility
+        {
+            get { return (Visibility)GetValue(PositionTextVisibilityProperty); }
+            set { SetValue(PositionTextVisibilityProperty, value); }
+        }
+
+        public static readonly DependencyProperty MaxPositionTextVisibilityProperty =
+            DependencyProperty.Register("MaxPositionTextVisibility", typeof(Visibility), typeof(PlayerAC), new FrameworkPropertyMetadata(OnMaxPositionTextVisibilityPropertyChanged));
+        public Visibility MaxPositionTextVisibility
+        {
+            get { return (Visibility)GetValue(MaxPositionTextVisibilityProperty); }
+            set { SetValue(MaxPositionTextVisibilityProperty, value); }
+        }
+
+        public static readonly DependencyProperty PositionProperty =
+            DependencyProperty.Register("Position", typeof(double), typeof(PlayerAC), new FrameworkPropertyMetadata());
+        public double Position
+        {
+            get { return (double)GetValue(PositionProperty); }
+            private set { SetValue(PositionProperty, value); }
+        }
+
+        public static readonly DependencyProperty JumpForwardOffsetProperty =
+            DependencyProperty.Register("JumpForwardOffset", typeof(double), typeof(PlayerAC), new FrameworkPropertyMetadata((double)10));
+        public double JumpForwardOffset
+        {
+            get { return (double)GetValue(JumpForwardOffsetProperty); }
+            set { SetValue(JumpForwardOffsetProperty, value); }
+        }
+
+        public static readonly DependencyProperty JumpBackwardOffsetProperty =
+            DependencyProperty.Register("JumpBackwardOffset", typeof(double), typeof(PlayerAC), new FrameworkPropertyMetadata((double)10));
+        public double JumpBackwardOffset
+        {
+            get { return (double)GetValue(JumpBackwardOffsetProperty); }
+            set { SetValue(JumpBackwardOffsetProperty, value); }
         }
 
         #endregion
@@ -72,21 +131,14 @@ namespace PlayerACv2
         public PlayerAC()
         {
             InitializeComponent();
-            _positionInSecTextControl = (TextBlock)this.FindName("Text_Position");
-            _maxPositionInSecTextControl = (TextBlock)this.FindName("Text_MaxPosition");
-            _playPauseButtonControl = (Button)this.FindName("Button_PlayPause");
-            _jumpBackwardButtonControl = (Button)this.FindName("Button_JumpBackward");
-            _jumpForwardButtonControl = (Button)this.FindName("Button_JumpForward");
-            _positionSliderControl = (Slider)this.FindName("Slider_Position");
 
-            if (_positionInSecTextControl == null ||
-                _maxPositionInSecTextControl == null ||
-                _playPauseButtonControl == null ||
-                _jumpBackwardButtonControl == null ||
-                _jumpForwardButtonControl == null ||
-                _positionSliderControl == null)
+            _playImageResource = (Image)this.FindResource("Image_Play");
+            _pauseImageResource = (Image)this.FindResource("Image_Pause");
+
+            if(_playImageResource == null ||
+                _pauseImageResource == null)
             {
-                throw new Exception("Au moins un des contrôles n'a pas été trouvé.");
+                throw new Exception("Resource(s) manquante(s).");
             }
 
             _mediaPlayer = new MediaPlayer();
@@ -95,8 +147,8 @@ namespace PlayerACv2
             _timer.Tick += _timer_Tick;
             _timer.Start();
 
-            _positionSliderControl.Value = 0;
-            _positionSliderControl.Maximum = 100;
+            this.Slider_Position.Value = 0;
+            this.Slider_Position.Maximum = 100;
         }
 
         #region Public methods
@@ -119,23 +171,34 @@ namespace PlayerACv2
         }
 
         /// <summary>
-        /// Joue la musique si elle est en pause et inversement
+        /// Défini l'état de la musique. Si True, joue la musique. Si False, pause la musique. Si null, inverse l'état actuel
         /// </summary>
-        public void PlayPause()
+        /// <param name="play"></param>
+        public void PlayPause(bool? play)
         {
-            if (_mediaPlayer.HasAudio)
+            if (play != null)
             {
-                if (IsPLaying)
+                // Mode manuel
+                if (play.Value)
                 {
-                    _mediaPlayer.Pause();
-                    IsPLaying = false;
+                    this.Play();
                 }
                 else
                 {
-                    _mediaPlayer.Play();
-                    IsPLaying = true;
+                    this.Pause();
                 }
-
+            }
+            else
+            {
+                // Mode automatique
+                if (IsPLaying)
+                {
+                    this.Pause();
+                }
+                else
+                {
+                    this.Play();
+                }
             }
         }
 
@@ -144,8 +207,7 @@ namespace PlayerACv2
         /// </summary>
         public void JumpBackward()
         {
-            TimeSpan destinationPosition = new TimeSpan(0, _mediaPlayer.Position.Minutes, _mediaPlayer.Position.Seconds - 10);
-            _mediaPlayer.Position = destinationPosition;
+            this.JumpToPosition(_mediaPlayer.Position.TotalSeconds - JumpBackwardOffset);
         }
 
         /// <summary>
@@ -153,25 +215,26 @@ namespace PlayerACv2
         /// </summary>
         public void JumpForward()
         {
-            TimeSpan destinationPosition = new TimeSpan(0, _mediaPlayer.Position.Minutes, _mediaPlayer.Position.Seconds + 10);
-            _mediaPlayer.Position = destinationPosition;
+            this.JumpToPosition(_mediaPlayer.Position.TotalSeconds + JumpForwardOffset);
         }
 
         /// <summary>
         /// Effectue un saut vers la position passée en paramètre
         /// </summary>
-        /// <param name="position"></param>
-        public void JumpToPosition(int position)
+        /// <param name="newPosition"></param>
+        public void JumpToPosition(double newPosition)
         {
-            int hours = position / 3600;
-            int minutes = (position % 3600) / 60;
-            int seconds = (position % 3600) % 60;
+            int newPositionInt = Convert.ToInt32(newPosition);
+            // Met à jour la position dans le lecteur
+            int hours = newPositionInt / 3600;
+            int minutes = (newPositionInt % 3600) / 60;
+            int seconds = (newPositionInt % 3600) % 60;
             TimeSpan destinationPosition = new TimeSpan(hours, minutes, seconds);
             _mediaPlayer.Position = destinationPosition;
         }
 
         #endregion
-        
+
         #region Events
 
         /// <summary>
@@ -181,12 +244,10 @@ namespace PlayerACv2
         /// <param name="e"></param>
         private void _timer_Tick(object sender, EventArgs e)
         {
-            // Mise à jour de la position courante de la musique
+            // Mise à jour de la position courante informative de la musique
             if (!IsUserDraggingSlider)
             {
-                double positionInSec = _mediaPlayer.Position.TotalSeconds;
-                _positionInSecTextControl.Text = this.GetTimeStringFromSeconds(Convert.ToInt32(positionInSec));
-                _positionSliderControl.Value = positionInSec;
+                UpdatePositionInformationIfChanged();
             }
         }
 
@@ -201,8 +262,8 @@ namespace PlayerACv2
             if (_mediaPlayer.NaturalDuration.HasTimeSpan)
             {
                 double maxPositionInSec = _mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                _maxPositionInSecTextControl.Text = this.GetTimeStringFromSeconds(Convert.ToInt32(maxPositionInSec));
-                _positionSliderControl.Maximum = maxPositionInSec;
+                this.Text_MaxPosition.Text = this.GetTimeStringFromSeconds(Convert.ToInt32(maxPositionInSec));
+                this.Slider_Position.Maximum = maxPositionInSec;
             }
         }
 
@@ -213,7 +274,7 @@ namespace PlayerACv2
         /// <param name="e"></param>
         private void Button_PlayPause_Click(object sender, RoutedEventArgs e)
         {
-            this.PlayPause();
+            this.PlayPause(null);
         }
 
         /// <summary>
@@ -265,8 +326,8 @@ namespace PlayerACv2
         {
             if (IsUserDraggingSlider)
             {
-                _positionInSecTextControl.Text = this.GetTimeStringFromSeconds(Convert.ToInt32(_positionSliderControl.Value));
-                this.JumpToPosition(Convert.ToInt32(_positionSliderControl.Value));
+                this.Text_Position.Text = this.GetTimeStringFromSeconds(Convert.ToInt32(this.Slider_Position.Value));
+                this.JumpToPosition(this.Slider_Position.Value);
             }
         }
 
@@ -279,7 +340,7 @@ namespace PlayerACv2
         /// </summary>
         /// <param name="totalSeconds"></param>
         /// <returns></returns>
-        public string GetTimeStringFromSeconds(int totalSeconds)
+        private string GetTimeStringFromSeconds(int totalSeconds)
         {
             int hours = totalSeconds / 3600;
             int minutes = (totalSeconds % 3600) / 60;
@@ -288,18 +349,90 @@ namespace PlayerACv2
             return hours.ToString("D2") + ":" + minutes.ToString("D2") + ":" + seconds.ToString("D2");
         }
 
+        private void Play()
+        {
+            if (_mediaPlayer.HasAudio)
+            {
+                _mediaPlayer.Play();
+                IsPLaying = true;
+                this.Button_PlayPause.Content = this._pauseImageResource;
+            }
+        }
+
+        private void Pause()
+        {
+            if (_mediaPlayer.HasAudio)
+            {
+                _mediaPlayer.Pause();
+                IsPLaying = false;
+                this.Button_PlayPause.Content = this._playImageResource;
+            }
+        }
+
+        /// <summary>
+        /// Met à jour les informations de la position si elle a changé
+        /// </summary>
+        private void UpdatePositionInformationIfChanged()
+        {
+            double positionInSec = _mediaPlayer.Position.TotalSeconds;
+            // Si la position a changée
+            if (Position != positionInSec)
+            {
+                // Met à jour le texte de la position
+                this.Text_Position.Text = this.GetTimeStringFromSeconds(Convert.ToInt32(positionInSec));
+                // Met à jour la position du thumb du slider
+                this.Slider_Position.Value = positionInSec;
+                // Met à jour la Dependency property 
+                Position = positionInSec;
+            }
+        }
+
         #endregion
 
         #region Statics methods
 
-        private static void OnMusicPathPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        private static void OnMusicPathNamePropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
         {
             PlayerAC control = source as PlayerAC;
             string musicPathName = (string)e.NewValue;
             control.SetMusique(musicPathName);
         }
 
+        private static void OnPlayPauseButtonVisibilityPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+            PlayerAC control = source as PlayerAC;
+            Visibility visibility = (Visibility)e.NewValue;
+            control.Button_PlayPause.Visibility = visibility;
+        }
 
+        private static void OnJumpButtonsVisibilityPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+            PlayerAC control = source as PlayerAC;
+            Visibility visibility = (Visibility)e.NewValue;
+            control.Button_JumpBackward.Visibility = visibility;
+            control.Button_JumpForward.Visibility = visibility;
+        }
+
+        private static void OnPositionSliderVisibilityPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+            PlayerAC control = source as PlayerAC;
+            Visibility visibility = (Visibility)e.NewValue;
+            control.Slider_Position.Visibility = visibility;
+        }
+
+        private static void OnPositionTextVisibilityPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+            PlayerAC control = source as PlayerAC;
+            Visibility visibility = (Visibility)e.NewValue;
+            control.Text_Position.Visibility = visibility;
+        }
+
+        private static void OnMaxPositionTextVisibilityPropertyChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+            PlayerAC control = source as PlayerAC;
+            Visibility visibility = (Visibility)e.NewValue;
+            control.Text_MaxPosition.Visibility = visibility;
+        }
 
         #endregion
     }

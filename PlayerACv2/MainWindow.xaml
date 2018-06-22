@@ -13,6 +13,13 @@
         <TextBox Text="{Binding Player.PositionInSec, Converter={StaticResource DoubleToTimeStringConverter}}"></TextBox>
         <Slider Value="{Binding Player.PositionInSec}" Maximum="{Binding Player.MaxPositionInSec}" Minimum="0"/>
         <TextBox Text="{Binding Player.MaxPositionInSec, Converter={StaticResource DoubleToTimeStringConverter}}"></TextBox>-->
-        <local:PlayerAC MusicPathName="{Binding MusicPathName}"></local:PlayerAC>
+        <local:PlayerAC MusicPathName="{Binding MusicPathName}"
+                        PlayPauseButtonVisibility="Visible"
+                        JumpButtonsVisibility="Visible"
+                        PositionSliderVisibility="Visible"
+                        PositionTextVisibility="Visible"
+                        MaxPositionTextVisibility="Visible"
+                        JumpForwardOffset="20">
+        </local:PlayerAC>
     </StackPanel>
 </Window>

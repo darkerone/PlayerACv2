@@ -14,17 +14,6 @@ namespace PlayerACv2.ViewModels
     {
         #region Properties
 
-        private PlayerViewModel _player;
-        public PlayerViewModel Player
-        {
-            get { return _player; }
-            set
-            {
-                _player = value;
-                OnPropertyChanged();
-            }
-        }
-
         private string _musicPathName;
         public string MusicPathName
         {
@@ -40,9 +29,7 @@ namespace PlayerACv2.ViewModels
 
         public MainViewModel()
         {
-            //_player = new PlayerViewModel();
             string currentDirectory = Directory.GetCurrentDirectory();
-            //_player.SetMusique(currentDirectory + "\\Imagine Dragons - Thunder.mp3");
             MusicPathName = currentDirectory + "\\Imagine Dragons - Thunder.mp3";
         }
 
